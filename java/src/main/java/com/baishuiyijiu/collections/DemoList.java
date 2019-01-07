@@ -34,5 +34,7 @@ public class DemoList {
         for (int n : intList) {
             System.out.println(n);
         }
+
+        intList.forEach(System.out::println);
     }
 }
