@@ -1,7 +1,13 @@
 package com.baishuiyijiu;
 
 import org.junit.Test;
+import utils.Constant;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +26,7 @@ public class StreamTest {
         List<String> list = Arrays.asList("a1", "a2", "b1", "b2", "c2", "c1");
         list.stream()
                 .filter(s -> s.startsWith("c")) // 过滤出以字符c打头的string
-                .map(String::toUpperCase) // 将string转成大写
+                .map(String::toUpperCase) // 将元素转成大写
                 .sorted() // 按照字典序排序
                 .forEach(System.out::println); // 打印
         // filter/map/sorted 都是中间操作，而forEach是终端操作。
@@ -61,7 +67,7 @@ public class StreamTest {
                 .forEach(System.out::println);
     }
 
-    // Stream操作顺序
+    // Stream操作顺序，管道操作
     @Test public void testOperationSequence() {
         Stream.of("d2", "a2", "b1", "b3", "c")
                 .filter(s -> {
@@ -89,7 +95,7 @@ public class StreamTest {
                 .anyMatch(s -> {
                     System.out.println("anyMatch: " + s);
                     return s.startsWith("A");
-                });
+                }); // anyMatch提前终止
 //        输出结果如下：
 //        map: d2
 //        anyMatch: D2
@@ -141,5 +147,40 @@ public class StreamTest {
         System.out.println(averageAge);
     }
 
+    // flatMap的使用
+    @Test public void testFlatMap() {
+        List<String> strings = new ArrayList<>();
+        strings.add("One flew over the cuckoo's nest");
+        strings.add("To kill a muckingbird");
+        strings.add("Gone with the wind");
+
+        strings.stream()
+                .flatMap((s) -> {
+                    String[] split = s.split(" ");
+                    return Arrays.asList(split).stream();
+                })
+                .forEach(System.out::println);
+    }
+
+    // 流式读文件
+    @Test public void readFile() throws IOException  {
+        Files.lines(Paths.get(Constant.getAppProperties().getProperty("input_file")), Charset.forName("UTF-8"))
+                .forEach(System.out::println);
+
+        Files.lines(Paths.get(Constant.getAppProperties().getProperty("input_file")))
+                .flatMap(s -> Stream.of(s.split(" ")))
+                .distinct()
+                .forEach(System.out::println);
+
+        Files.lines(Paths.get(Constant.getAppProperties().getProperty("input_file")))
+                .map(String::toUpperCase)
+                .distinct()
+                .forEach(System.out::println);
+
+        Files.lines(Paths.get(Constant.getAppProperties().getProperty("input_file")))
+                .flatMap(line -> Stream.of(line.split(" ")))
+                .filter(word -> word.startsWith("h"))
+                .forEach(System.out::println);
+    }
 
 }
